@@ -1,0 +1,25 @@
+name: aot-packs
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Build packs
+        run: python tools/fetch_packs.py tools/aot_sources.json out ${{ github.repository }}
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view packs >/dev/null 2>&1 || gh release create packs --title "AOT packs" --notes "Toolchain packs for AOT"
+          rm -rf out/work
+          gh release upload packs out/*.tar.xz out/catalog.body.json out/report.json out/sources.lock.json --clobber
