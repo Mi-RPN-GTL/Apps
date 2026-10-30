@@ -2,6 +2,9 @@
 import hashlib, io, json, os, subprocess, sys, urllib.request, zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pack_factory as pf
+import elfcheck
+import jdk_pack
+import inproc_build
 
 
 def get(urls, sha):
@@ -29,12 +32,21 @@ def place(work, f, lock):
     lock[f["dest"]] = {"url": u, "sha256": h}
     if f.get("zip_member"):
         data = zipfile.ZipFile(io.BytesIO(data)).read(f["zip_member"])
+    elif f.get("zip_basename"):
+        zf = zipfile.ZipFile(io.BytesIO(data))
+        hits = [n for n in zf.namelist() if os.path.basename(n) == f["zip_basename"] and not n.endswith("/")]
+        if not hits:
+            raise RuntimeError("no " + f["zip_basename"] + " in archive from " + u + "; members: " + ", ".join(zf.namelist()[:25]))
+        data = zf.read(sorted(hits, key=len)[0])
     elif f.get("aar_classes"):
         data = zipfile.ZipFile(io.BytesIO(data)).read("classes.jar")
     dest = os.path.join(work, f["dest"])
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     with open(dest, "wb") as o:
         o.write(data)
+    if f.get("elf"):
+        os.chmod(dest, 0o755)
+        elfcheck.validate(dest, set(os.listdir(os.path.dirname(dest))))
     return True
 
 
@@ -62,8 +74,14 @@ def main(src, out, repo):
             os.makedirs(work, exist_ok=True)
             for f in p["files"]:
                 place(work, f, lock)
+            if p.get("termux"):
+                det = {}
+                report.setdefault("details", {})[pid] = det
+                jdk_pack.build(work, lambda u: get([u], "")[0], lock, tuple(p["termux"].get("roots", ["openjdk-17"])), report=det)
             if p.get("dex"):
                 dex(work, p["dex"], root)
+            if p.get("inproc"):
+                inproc_build.build(work, p["inproc"], os.path.dirname(os.path.abspath(__file__)), report.setdefault("details", {}).setdefault(pid, {}))
             rest = []
             if p.get("requires"):
                 rest += ["--requires", ",".join(p["requires"])]
@@ -73,7 +91,7 @@ def main(src, out, repo):
             pf.build(work, out, pid, p["version"], p["name"], rest)
             report["built"].append(pid)
         except BaseException as e:
-            report["failed"][pid] = str(e)[:400]
+            report["failed"][pid] = str(e)[:1500]
             for n in (pid + ".info.json",):
                 if os.path.exists(os.path.join(out, n)):
                     os.remove(os.path.join(out, n))
@@ -85,4 +103,5 @@ def main(src, out, repo):
         sys.exit("no pack could be built")
 
 
-main(sys.argv[1], sys.argv[2], sys.argv[3])
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3])
