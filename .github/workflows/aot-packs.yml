@@ -14,6 +14,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - name: Probe sources
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p out
+          python tools/probe.py out
       - name: Build packs
         run: python tools/fetch_packs.py tools/aot_sources.json out ${{ github.repository }}
       - name: Publish
@@ -22,4 +29,5 @@ jobs:
         run: |
           gh release view packs >/dev/null 2>&1 || gh release create packs --title "AOT packs" --notes "Toolchain packs for AOT"
           rm -rf out/work
-          gh release upload packs out/*.tar.xz out/catalog.body.json out/report.json out/sources.lock.json --clobber
+          [ -f out/probe.json ] || echo '{"errors":["probe did not run"]}' > out/probe.json
+          gh release upload packs out/*.tar.xz out/catalog.body.json out/report.json out/sources.lock.json out/probe.json --clobber
