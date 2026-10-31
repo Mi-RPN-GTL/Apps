@@ -66,6 +66,9 @@ public final class D8Entry {
             return h.errors > 0 ? 1 : 0;
         } catch (CompilationFailedException e) {
             return 1;
+        } catch (OutOfMemoryError | LinkageError t) {
+            err.println("engine unusable: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+            return 125;
         } catch (Throwable t) {
             err.println(t.getClass().getSimpleName() + ": " + t.getMessage());
             return 2;
