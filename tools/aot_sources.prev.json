@@ -4,7 +4,7 @@
   {
    "id": "core",
    "name": "Core toolchain",
-   "version": "2",
+   "version": "3",
    "requires": [],
    "entries": {
     "r8": "r8",
@@ -62,7 +62,10 @@
      "classes": [
       "EcjEntry"
      ],
-     "check": "ecj"
+     "check": "ecj",
+     "resources": [
+      "org/eclipse/jdt/internal/compiler/batch/messages.properties"
+     ]
     }
    ]
   },
