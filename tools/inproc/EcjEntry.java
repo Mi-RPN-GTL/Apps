@@ -18,6 +18,10 @@ public final class EcjEntry {
             o.flush();
             e.flush();
             return ok ? 0 : 1;
+        } catch (OutOfMemoryError | LinkageError | java.util.MissingResourceException t) {
+            e.println("engine unusable: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+            e.flush();
+            return 125;
         } catch (Throwable t) {
             e.println(t.getClass().getSimpleName() + ": " + t.getMessage());
             e.flush();
