@@ -165,7 +165,7 @@
   {
    "id": "compose",
    "name": "Compose",
-   "version": "1.7.5",
+   "version": "1.7.5.2",
    "requires": [
     "core",
     "kotlin"
@@ -261,6 +261,13 @@
       "https://maven.google.com/androidx/compose/material3/material3-android/1.3.1/material3-android-1.3.1.aar"
      ],
      "dest": "classes/material3-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/material/material-icons-core-android/1.7.5/material-icons-core-android-1.7.5.aar"
+     ],
+     "dest": "classes/material-icons-core-android.jar",
      "aar_classes": true
     }
    ]
