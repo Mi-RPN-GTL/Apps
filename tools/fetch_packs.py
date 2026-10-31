@@ -55,7 +55,7 @@ def dex(work, spec, root):
     dst = os.path.join(work, spec["dst"])
     os.makedirs(dst, exist_ok=True)
     jars = sorted(os.path.join(src, n) for n in os.listdir(src) if n.endswith(".jar"))
-    cmd = ["java", "-cp", os.path.join(root, "core", "r8", "r8.jar"), "com.android.tools.r8.D8", "--release", "--min-api", "26", "--lib", os.path.join(root, "core", "android.jar"), "--output", dst] + jars
+    cmd = ["java", "-cp", os.path.join(root, "core", "r8", "r8.jar"), "com.android.tools.r8.D8", "--release", "--min-api", "21", "--lib", os.path.join(root, "core", "android.jar"), "--output", dst] + jars
     r = subprocess.run(cmd, capture_output=True)
     if r.returncode != 0:
         raise RuntimeError("d8 failed: " + r.stderr.decode(errors="replace")[-300:])
