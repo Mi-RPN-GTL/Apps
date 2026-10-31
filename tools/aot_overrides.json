@@ -1,0 +1,11 @@
+{
+ "note": "Your own pins and mirrors. AOT never overwrites this file. Under files, key by the dest of a file listed in tools/aot_sources.json and give urls and/or sha256.",
+ "example": {
+  "files": {
+   "android.jar": {
+    "sha256": "<64 hex characters>"
+   }
+  }
+ },
+ "files": {}
+}
