@@ -1,0 +1,243 @@
+{
+ "note": "Edit urls or add sha256 to pin. Observed hashes are in the release file sources.lock.json. The kotlin pack needs an arm64 Android JDK: add it to kotlin files as dest jdk/... and set entries java and jdk.home.",
+ "packs": [
+  {
+   "id": "core",
+   "name": "Core toolchain",
+   "version": "1",
+   "requires": [],
+   "entries": {
+    "r8": "r8",
+    "ecj": "ecj",
+    "android.jar": "android.jar"
+   },
+   "files": [
+    {
+     "urls": [
+      "https://maven.google.com/com/android/tools/r8/8.7.18/r8-8.7.18.jar"
+     ],
+     "dest": "r8/r8.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/eclipse/jdt/ecj/3.38.0/ecj-3.38.0.jar"
+     ],
+     "dest": "ecj/ecj.jar"
+    },
+    {
+     "urls": [
+      "https://dl.google.com/android/repository/platform-35_r02.zip",
+      "https://dl.google.com/android/repository/platform-35_r01.zip",
+      "https://dl.google.com/android/repository/platform-34-ext7_r02.zip"
+     ],
+     "dest": "android.jar",
+     "zip_member": "android-35/android.jar"
+    }
+   ]
+  },
+  {
+   "id": "kotlin",
+   "name": "Kotlin compiler",
+   "version": "2.0.21",
+   "requires": [
+    "core"
+   ],
+   "entries": {
+    "kotlinc.lib": "kotlinc.lib",
+    "stdlib": "stdlib",
+    "serialization.plugin": "plugins/serialization.jar",
+    "java": "jdk/bin/java",
+    "jdk.home": "jdk"
+   },
+   "files": [
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.0.21/kotlin-compiler-embeddable-2.0.21.jar"
+     ],
+     "dest": "kotlinc.lib/kotlin-compiler-embeddable.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.0.21/kotlin-stdlib-2.0.21.jar"
+     ],
+     "dest": "kotlinc.lib/kotlin-stdlib.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/2.0.21/kotlin-script-runtime-2.0.21.jar"
+     ],
+     "dest": "kotlinc.lib/kotlin-script-runtime.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar"
+     ],
+     "dest": "kotlinc.lib/kotlin-reflect.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-daemon-embeddable/2.0.21/kotlin-daemon-embeddable-2.0.21.jar"
+     ],
+     "dest": "kotlinc.lib/kotlin-daemon-embeddable.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/intellij/deps/trove4j/1.0.20200330/trove4j-1.0.20200330.jar"
+     ],
+     "dest": "kotlinc.lib/trove4j.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+     ],
+     "dest": "kotlinc.lib/annotations.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.4/kotlinx-coroutines-core-jvm-1.6.4.jar"
+     ],
+     "dest": "kotlinc.lib/kotlinx-coroutines-core-jvm.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.0.21/kotlin-stdlib-2.0.21.jar"
+     ],
+     "dest": "stdlib/kotlin-stdlib.jar"
+    },
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-serialization-compiler-plugin-embeddable/2.0.21/kotlin-serialization-compiler-plugin-embeddable-2.0.21.jar"
+     ],
+     "dest": "plugins/serialization.jar"
+    },
+    {
+     "urls": [],
+     "dest": "jdk/bin/java",
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "compose",
+   "name": "Compose",
+   "version": "1.7.5",
+   "requires": [
+    "core",
+    "kotlin"
+   ],
+   "entries": {
+    "classes": "classes",
+    "dex": "dex",
+    "compiler.plugin": "plugins/compose-compiler.jar"
+   },
+   "dex": {
+    "src": "classes",
+    "dst": "dex"
+   },
+   "files": [
+    {
+     "urls": [
+      "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compose-compiler-plugin-embeddable/2.0.21/kotlin-compose-compiler-plugin-embeddable-2.0.21.jar"
+     ],
+     "dest": "plugins/compose-compiler.jar"
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/runtime/runtime-android/1.7.5/runtime-android-1.7.5.aar"
+     ],
+     "dest": "classes/runtime-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/ui/ui-android/1.7.5/ui-android-1.7.5.aar"
+     ],
+     "dest": "classes/ui-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/ui/ui-graphics-android/1.7.5/ui-graphics-android-1.7.5.aar"
+     ],
+     "dest": "classes/ui-graphics-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/ui/ui-text-android/1.7.5/ui-text-android-1.7.5.aar"
+     ],
+     "dest": "classes/ui-text-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/ui/ui-unit-android/1.7.5/ui-unit-android-1.7.5.aar"
+     ],
+     "dest": "classes/ui-unit-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/ui/ui-geometry-android/1.7.5/ui-geometry-android-1.7.5.aar"
+     ],
+     "dest": "classes/ui-geometry-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/foundation/foundation-android/1.7.5/foundation-android-1.7.5.aar"
+     ],
+     "dest": "classes/foundation-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/foundation/foundation-layout-android/1.7.5/foundation-layout-android-1.7.5.aar"
+     ],
+     "dest": "classes/foundation-layout-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/animation/animation-android/1.7.5/animation-android-1.7.5.aar"
+     ],
+     "dest": "classes/animation-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/animation/animation-core-android/1.7.5/animation-core-android-1.7.5.aar"
+     ],
+     "dest": "classes/animation-core-android.jar",
+     "aar_classes": true
+    },
+    {
+     "urls": [
+      "https://maven.google.com/androidx/compose/material3/material3-android/1.3.1/material3-android-1.3.1.aar"
+     ],
+     "dest": "classes/material3-android.jar",
+     "aar_classes": true
+    }
+   ]
+  },
+  {
+   "id": "bundletool",
+   "name": "Bundletool",
+   "version": "1.17.2",
+   "requires": [
+    "core"
+   ],
+   "entries": {
+    "bundletool": "bundletool/bundletool.jar"
+   },
+   "files": [
+    {
+     "urls": [
+      "https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar"
+     ],
+     "dest": "bundletool/bundletool.jar"
+    }
+   ]
+  }
+ ]
+}
