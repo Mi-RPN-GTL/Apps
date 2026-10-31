@@ -1,15 +1,18 @@
 {
- "note": "Edit urls or add sha256 to pin. Observed hashes are in the release file sources.lock.json. The kotlin pack needs an arm64 Android JDK: add it to kotlin files as dest jdk/... and set entries java and jdk.home.",
+ "note": "This file is owned by AOT and replaced on every Set up packs (the previous copy is kept as aot_sources.prev.json). To pin a hash or change a url, use tools/aot_overrides.json instead. Observed hashes are in the release file sources.lock.json. The jdk pack is built from Termux openjdk-17 (aarch64) debs by jdk_pack.py: set termux.roots to change it. Every binary is checked and a pack that cannot run is not published.",
  "packs": [
   {
    "id": "core",
    "name": "Core toolchain",
-   "version": "1",
+   "version": "2",
    "requires": [],
    "entries": {
     "r8": "r8",
     "ecj": "ecj",
-    "android.jar": "android.jar"
+    "android.jar": "android.jar",
+    "d8.dex": "dex/r8.jar",
+    "r8.dex": "dex/r8.jar",
+    "ecj.dex": "dex/ecj.jar"
    },
    "files": [
     {
@@ -33,21 +36,65 @@
      "dest": "android.jar",
      "zip_member": "android-35/android.jar"
     }
+   ],
+   "inproc": [
+    {
+     "name": "r8",
+     "jar": "r8/r8.jar",
+     "sources": [
+      "D8Entry.java",
+      "R8Entry.java"
+     ],
+     "out": "dex/r8.jar",
+     "classes": [
+      "D8Entry",
+      "R8Entry"
+     ],
+     "check": "d8"
+    },
+    {
+     "name": "ecj",
+     "jar": "ecj/ecj.jar",
+     "sources": [
+      "EcjEntry.java"
+     ],
+     "out": "dex/ecj.jar",
+     "classes": [
+      "EcjEntry"
+     ],
+     "check": "ecj"
+    }
    ]
+  },
+  {
+   "id": "jdk",
+   "name": "Java runtime (OpenJDK 17, arm64)",
+   "version": "1",
+   "requires": [],
+   "entries": {
+    "java": "jdk/bin/java",
+    "jdk.home": "jdk",
+    "libs": "libs"
+   },
+   "termux": {
+    "roots": [
+     "openjdk-17"
+    ]
+   },
+   "files": []
   },
   {
    "id": "kotlin",
    "name": "Kotlin compiler",
    "version": "2.0.21",
    "requires": [
-    "core"
+    "core",
+    "jdk"
    ],
    "entries": {
     "kotlinc.lib": "kotlinc.lib",
     "stdlib": "stdlib",
-    "serialization.plugin": "plugins/serialization.jar",
-    "java": "jdk/bin/java",
-    "jdk.home": "jdk"
+    "serialization.plugin": "plugins/serialization.jar"
    },
    "files": [
     {
@@ -109,11 +156,6 @@
       "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-serialization-compiler-plugin-embeddable/2.0.21/kotlin-serialization-compiler-plugin-embeddable-2.0.21.jar"
      ],
      "dest": "plugins/serialization.jar"
-    },
-    {
-     "urls": [],
-     "dest": "jdk/bin/java",
-     "optional": true
     }
    ]
   },
@@ -236,6 +278,25 @@
       "https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar"
      ],
      "dest": "bundletool/bundletool.jar"
+    }
+   ]
+  },
+  {
+   "id": "aapt2",
+   "name": "aapt2 (resource tool)",
+   "version": "1",
+   "requires": [],
+   "entries": {
+    "aapt2": "bin/aapt2"
+   },
+   "files": [
+    {
+     "urls": [
+      "https://github.com/lzhiyong/android-sdk-tools/releases/download/35.0.2/android-sdk-tools-static-aarch64.zip"
+     ],
+     "dest": "bin/aapt2",
+     "zip_basename": "aapt2",
+     "elf": true
     }
    ]
   }
