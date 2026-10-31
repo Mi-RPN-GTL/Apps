@@ -21,14 +21,27 @@ def sh(cmd, run=subprocess.run, cwd=None):
 
 def need(code, out, what):
     if code != 0:
-        raise RuntimeError(what + " failed (exit " + str(code) + "): " + out[-700:])
+        shown = out if len(out) <= 1300 else out[:500] + "\n...\n" + out[-700:]
+        raise RuntimeError(what + " failed (exit " + str(code) + "): " + shown)
+
+
+def jar_dir(d, out):
+    """D8 takes .class, .jar, .zip and .dex files, not directories: pack a class directory into a jar first."""
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for root, dirs, files in os.walk(d):
+            dirs.sort()
+            for f in sorted(files):
+                p = os.path.join(root, f)
+                z.write(p, os.path.relpath(p, d).replace(os.sep, "/"))
+    return out
 
 
 def dex_jar(work, jar, classes_dir, out_jar, run):
     r8 = os.path.join(work, "r8", "r8.jar")
     lib = os.path.join(work, "android.jar")
     os.makedirs(os.path.dirname(out_jar), exist_ok=True)
-    code, out = sh(["java", "-cp", r8, "com.android.tools.r8.D8", "--release", "--min-api", "26", "--lib", lib, "--output", out_jar, jar, classes_dir], run)
+    classes_jar = jar_dir(classes_dir, classes_dir.rstrip("/\\") + ".jar")
+    code, out = sh(["java", "-cp", r8, "com.android.tools.r8.D8", "--release", "--min-api", "26", "--lib", lib, "--output", out_jar, jar, classes_jar], run)
     need(code, out, "dexing " + os.path.basename(jar))
     if not os.path.exists(out_jar):
         raise RuntimeError("d8 produced no " + out_jar)
@@ -80,7 +93,7 @@ def smoke(work, spec, cls, run):
             r8jar = os.path.join(work, "r8", "r8.jar")
             dexout = os.path.join(tmp, "dexout")
             os.makedirs(dexout)
-            code, out = sh(["java", "-cp", os.pathsep.join([r8jar, os.path.join(work, ".inproc", "r8cls")]), "dev.makeroffline.tool.D8Entry", "--release", "--min-api", "26", "--lib", lib, "--output", dexout, outc], run)
+            code, out = sh(["java", "-cp", os.pathsep.join([r8jar, os.path.join(work, ".inproc", "r8cls")]), "dev.makeroffline.tool.D8Entry", "--release", "--min-api", "26", "--lib", lib, "--output", dexout, jar_dir(outc, outc + ".jar")], run)
             need(code, out, "D8Entry dex of the compiled class")
             if not os.path.exists(os.path.join(dexout, "classes.dex")):
                 raise RuntimeError("D8Entry produced no classes.dex")
