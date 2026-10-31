@@ -5,7 +5,6 @@ import com.android.tools.r8.R8;
 import com.android.tools.r8.R8Command;
 import com.android.tools.r8.Diagnostic;
 import com.android.tools.r8.DiagnosticsHandler;
-import com.android.tools.r8.Version;
 import com.android.tools.r8.origin.Origin;
 import java.io.PrintStream;
 
@@ -41,14 +40,22 @@ public final class R8Entry {
         }
     }
 
+    private static String version() {
+        try {
+            return String.valueOf(Class.forName("com.android.tools.r8.Version").getMethod("getVersionString").invoke(null));
+        } catch (Throwable t) {
+            return "unknown";
+        }
+    }
+
     public static int run(String[] args, PrintStream out, PrintStream err) {
         for (String a : args) {
             if (a.equals("--version")) {
-                out.println("R8 " + Version.getVersionString());
+                out.println("R8 " + version());
                 return 0;
             }
             if (a.equals("--help")) {
-                out.println(R8Command.getUsageMessage());
+                out.println("Usage: R8 [options] <input files>. Options are those of the command line tool.");
                 return 0;
             }
         }
