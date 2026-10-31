@@ -61,8 +61,36 @@ def dex(work, spec, root):
         raise RuntimeError("d8 failed: " + r.stderr.decode(errors="replace")[-300:])
 
 
+def apply_overrides(spec, path):
+    """tools/aot_overrides.json belongs to the user and is never overwritten by the app.
+    {"files": {"<dest of a file in aot_sources.json>": {"urls": [...], "sha256": "..."}}}
+    Returns the dests that matched no file (reported as a warning)."""
+    if not os.path.exists(path):
+        return []
+    try:
+        ov = json.load(open(path))
+    except Exception as e:
+        raise RuntimeError("tools/aot_overrides.json is not valid JSON: " + str(e))
+    files = ov.get("files", {}) if isinstance(ov, dict) else {}
+    used = set()
+    for p in spec["packs"]:
+        for f in p.get("files", []):
+            o = files.get(f.get("dest"))
+            if not isinstance(o, dict):
+                continue
+            if o.get("urls"):
+                f["urls"] = list(o["urls"])
+            if "sha256" in o:
+                f["sha256"] = o["sha256"]
+            used.add(f["dest"])
+    return sorted(set(files) - used)
+
+
 def main(src, out, repo):
     spec = json.load(open(src))
+    unknown = apply_overrides(spec, os.path.join(os.path.dirname(os.path.abspath(src)), "aot_overrides.json"))
+    for d in unknown:
+        print("warning: aot_overrides.json has no file with dest " + d)
     os.makedirs(out, exist_ok=True)
     root = os.path.join(out, "work")
     lock = {}
