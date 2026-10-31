@@ -47,6 +47,35 @@ def dex_jar(work, jar, classes_dir, out_jar, run):
         raise RuntimeError("d8 produced no " + out_jar)
 
 
+def copy_resources(tool_jar, out_jar):
+    """D8 writes classes.dex only. The tools read bundles and tables from their own jar (ecj: messages.properties,
+    parser*.rsc), so every non-class file is copied into the dex jar; DexClassLoader serves them to getResource."""
+    skip_sig = (".SF", ".RSA", ".DSA", ".EC")
+    n = 0
+    with zipfile.ZipFile(tool_jar) as src, zipfile.ZipFile(out_jar, "a", zipfile.ZIP_DEFLATED) as dst:
+        have = set(dst.namelist())
+        for info in src.infolist():
+            name = info.filename
+            if name.endswith("/") or name.endswith(".class") or name in have:
+                continue
+            if name.startswith("META-INF/versions/") or name == "META-INF/MANIFEST.MF":
+                continue
+            if name.startswith("META-INF/") and name.endswith(skip_sig):
+                continue
+            dst.writestr(name, src.read(name))
+            have.add(name)
+            n += 1
+    return n
+
+
+def require_resources(out_jar, names):
+    with zipfile.ZipFile(out_jar) as z:
+        have = set(z.namelist())
+    missing = [n for n in names if n not in have]
+    if missing:
+        raise RuntimeError(out_jar + " lacks the resources " + ", ".join(missing) + " the tool reads at run time")
+
+
 def dex_has_classes(out_jar, names):
     found = set()
     with zipfile.ZipFile(out_jar) as z:
@@ -119,7 +148,9 @@ def build(work, specs, srcdir, report, run=subprocess.run):
         need(code, out, "javac of " + ", ".join(spec["sources"]))
         out_jar = os.path.join(work, spec["out"])
         dex_jar(work, jar, cls, out_jar, run)
+        res = copy_resources(jar, out_jar)
+        require_resources(out_jar, spec.get("resources", []))
         dex_has_classes(out_jar, spec["classes"])
         smoke(work, spec, cls, run)
-        report["engines"][spec["name"]] = {"out": spec["out"], "bytes": os.path.getsize(out_jar), "smoke": "ok on desktop JVM"}
+        report["engines"][spec["name"]] = {"out": spec["out"], "bytes": os.path.getsize(out_jar), "resources": res, "smoke": "ok on desktop JVM"}
     shutil.rmtree(os.path.join(work, ".inproc"), ignore_errors=True)
